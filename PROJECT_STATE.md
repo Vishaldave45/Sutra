@@ -11,61 +11,72 @@ Observe -> Understand -> Remember -> Suggest -> Act -> Learn.
 
 ## Current Phase
 
-Phase 0 — Project Foundation.
+Phase 1 — Backend Foundation.
+
+STATUS: 🔒 LOCKED (Implemented, awaiting architectural review)
 
 ## Current Objective
 
-Establish the repository structure and engineering governance without adding
-application or business functionality.
+Build a clean, testable, runnable FastAPI backend foundation without external dependencies.
 
 ## Completed Work
 
-- Required application, package, test, and documentation directories exist.
-- Foundation documentation and repository configuration have been created.
-- A minimal Docker Compose placeholder exists with no services.
+### Phase 0 — Project Foundation
+- Established directory skeleton and governance documentation.
+- Tracked placeholder configuration.
+
+### Phase 1 — Backend Foundation
+- Implemented environment-based configuration via `pydantic-settings` (`apps/api/config.py`).
+- Implemented application entry point and lifespan logging (`apps/api/main.py`).
+- Implemented dependency injection skeleton (`apps/api/dependencies.py`).
+- Implemented minimal centralized error handler (`apps/api/core/errors.py`).
+- Implemented structured logging setup (`apps/api/core/logging.py`).
+- Implemented health check endpoint `GET /api/v1/health` returning `{"status": "ok", "service": "sutra-api"}` (`apps/api/api/v1/routes/health.py`).
+- Implemented automated test suite with pytest & HTTPX (`tests/api/test_health.py`).
+- Configured Ruff linter and code style rules (`ruff.toml`).
+- All tests pass and Ruff checks pass cleanly.
+
+## Implemented vs Planned
+
+### IMPLEMENTED
+- FastAPI application startup (`apps/api/main.py`)
+- Pydantic Settings configuration (`apps/api/config.py`)
+- Health endpoint (`GET /api/v1/health`)
+- Centralized error-handling hook
+- Structured logging configuration
+- Automated API test suite
+
+### PLANNED (Not Implemented)
+- Database & ORM (PostgreSQL, SQLAlchemy, Alembic)
+- LLM connectivity & prompt templates
+- Agent orchestration & task loop
+- Memory persistence & retrieval
+- WhatsApp webhook/polling integration
+- Worker execution engine
+- Web Control Center UI
 
 ## Current Work
 
-Prepare the completed foundation for architectural review.
+Phase 1 implementation complete. Ready for architectural review.
 
 ## Next Work
 
-- Complete architectural review of Phase 0.
-- Open Phase 1 only after Phase 0 is accepted.
+Phase 2 — Database Architecture (PostgreSQL, models, migrations, persistence).
+Awaiting Phase 1 review and acceptance before unlocking.
 
 ## Important Decisions
 
-- WhatsApp is the primary interface; the Web Control Center is secondary.
-- Phase boundaries are locked and must be reviewed before advancing.
-- Phase 0 contains no AI, LLM, database, WhatsApp, memory, agent, tool,
-	automation, or frontend functionality.
-
-## Open Questions
-
-- None for the Phase 0 foundation.
-
-## Known Risks
-
-- Empty directories are not represented in Git until they contain a tracked
-	file; their required filesystem structure is currently present locally.
-
-## Files Changed
-
-- `README.md`
-- `PROJECT_STATE.md`
-- `TODO.md`
-- `CHANGELOG.md`
-- `.gitignore`
-- `.env.example`
-- `docker-compose.yml`
-- `.gitkeep` markers for the required empty directories
+- Architecture remains locked per specifications; no speculative abstractions added.
+- No external services (PostgreSQL, Redis, LLM, WhatsApp) introduced in Phase 1.
+- No git commits created without explicit instruction.
 
 ## Testing Status
 
-Phase 0 structure, required files, ignore rules, Python syntax, and minimal
-Compose configuration have passed sanity checks.
+- Pytest: 3 tests passing (`tests/api/test_health.py`).
+- Ruff: Checks passed, formatting verified clean.
+- Manual verification: Direct execution of `create_app()` and `GET /api/v1/health` validated.
 
 ## Environment Status
 
-Python virtual environment `.venv/` exists locally and is excluded from Git.
-No external infrastructure is configured.
+- Python 3.12 virtual environment (`.venv/`) configured with `fastapi`, `uvicorn`, `pydantic-settings`, `pytest`, `httpx`, and `ruff`.
+- No database or external services running or required.

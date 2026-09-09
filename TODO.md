@@ -1,15 +1,33 @@
 # Roadmap
 
-## P0
+## Phase 0 — Project Foundation (Completed & Committed)
 
-- Review and accept the Phase 0 foundation.
-- Complete the architectural review checkpoint.
+- [x] Establish repository structure and directories.
+- [x] Define governance and phase-tracking documentation.
+- [x] Initial commit on `main`.
 
-## P1
+## Phase 1 — Backend Foundation (Implemented & Verified)
 
-- Formally open the Backend Foundation phase after Phase 0 acceptance.
-- Define and implement the reviewed API foundation.
+- [x] Configure Pydantic Settings (`apps/api/config.py`).
+- [x] Implement structured logging (`apps/api/core/logging.py`).
+- [x] Implement minimal error handling (`apps/api/core/errors.py`).
+- [x] Implement health route `GET /api/v1/health` (`apps/api/api/v1/routes/health.py`).
+- [x] Implement FastAPI application entry point (`apps/api/main.py`).
+- [x] Implement dependency provider (`apps/api/dependencies.py`).
+- [x] Configure Ruff linter (`ruff.toml`).
+- [x] Create test suite with pytest & HTTPX (`tests/api/test_health.py`).
+- [x] Verify startup without external services.
+- [ ] Architectural review & acceptance.
 
-## P2
+## Phase 2 — Database Architecture (Locked / Planned)
 
-- Research later-phase architecture decisions only when their phase is opened.
+- [ ] Design PostgreSQL schema & data models.
+- [ ] Configure database connections and migrations.
+- [ ] Implement repository interfaces.
+
+## Later Phases (Planned)
+
+- [ ] Core Agent Engine
+- [ ] Memory System
+- [ ] WhatsApp Integration
+- [ ] Web Control Center

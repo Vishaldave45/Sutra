@@ -5,8 +5,8 @@ mental and manual work required to run the day.
 
 ## Interfaces
 
-- Primary interface: WhatsApp
-- Secondary interface: Web Control Center
+- Primary interface: WhatsApp (Planned)
+- Secondary interface: Web Control Center (Planned)
 
 ## Core Purpose
 
@@ -14,27 +14,56 @@ Sutra is intended to support the loop:
 
 Observe -> Understand -> Remember -> Suggest -> Act -> Learn
 
-These capabilities are planned. They are not implemented in the current
-foundation phase.
+These capabilities are PLANNED. They are not implemented in the current
+backend foundation.
 
 ## High-Level Architecture
 
 The repository is organized into application services under `apps/`, reusable
 domain packages under `packages/`, tests under `tests/`, and technical/product
-documentation under `docs/`. The architecture will be expanded phase by phase
-as decisions are reviewed and locked.
+documentation under `docs/`.
 
-## Development Philosophy
+```text
+apps/api/
+├── main.py
+├── config.py
+├── dependencies.py
+│
+├── api/
+│   └── v1/
+│       └── routes/
+│           └── health.py
+│
+└── core/
+    ├── errors.py
+    └── logging.py
 
-- Implement only the currently locked phase.
-- Prefer small, explicit structures over speculative abstractions.
-- Keep planned capabilities clearly separate from implemented capabilities.
-- Verify each phase before beginning the next one.
+tests/
+└── api/
+    └── test_health.py
+```
+
+## Implemented Capabilities
+
+- FastAPI application core (`apps/api/main.py`)
+- Pydantic Settings environment-based configuration (`apps/api/config.py`)
+- Centralized error-handling baseline (`apps/api/core/errors.py`)
+- Structured logging configuration (`apps/api/core/logging.py`)
+- Liveness health endpoint (`GET /api/v1/health`)
+- Automated tests using pytest and HTTPX
+
+## Planned Capabilities (Not Implemented)
+
+- Database persistence & migrations (PostgreSQL / SQLAlchemy)
+- Agent runtime & tool execution framework
+- LLM integrations & context assembly
+- Memory systems (working, short-term, long-term)
+- WhatsApp messaging adapter
+- Web Control Center frontend
 
 ## Current Phase
 
-Phase 0 — Project Foundation.
+Phase 1 — Backend Foundation.
 
-This phase establishes repository structure and engineering governance. No AI,
-LLM, database, WhatsApp, memory, agent, tool, API, automation, or frontend
-functionality belongs in this phase.
+This phase establishes the runnable FastAPI backend boundary. No database,
+LLM, agent, tool, or messaging integration is present.
