@@ -15,13 +15,25 @@ Sutra is intended to support the loop:
 Observe -> Understand -> Remember -> Suggest -> Act -> Learn
 
 These capabilities are PLANNED. They are not implemented in the current
-backend foundation.
+phases.
 
-## High-Level Architecture
+## Architecture
 
-The repository is organized into application services under `apps/`, reusable
-domain packages under `packages/`, tests under `tests/`, and technical/product
-documentation under `docs/`.
+```text
+FastAPI
+   │
+   ▼
+Application / Services
+   │
+   ▼
+Repositories
+   │
+   ▼
+SQLAlchemy (Async)
+   │
+   ▼
+PostgreSQL (16)
+```
 
 ```text
 apps/api/
@@ -34,36 +46,71 @@ apps/api/
 │       └── routes/
 │           └── health.py
 │
-└── core/
-    ├── errors.py
-    └── logging.py
+├── core/
+│   ├── errors.py
+│   └── logging.py
+│
+├── db/
+│   ├── base.py
+│   ├── session.py
+│   └── models/
+│
+└── repositories/
+
+alembic/
+├── versions/
+├── env.py
+└── script.py.mako
 
 tests/
-└── api/
-    └── test_health.py
+├── api/
+└── db/
 ```
 
 ## Implemented Capabilities
 
 - FastAPI application core (`apps/api/main.py`)
-- Pydantic Settings environment-based configuration (`apps/api/config.py`)
-- Centralized error-handling baseline (`apps/api/core/errors.py`)
-- Structured logging configuration (`apps/api/core/logging.py`)
-- Liveness health endpoint (`GET /api/v1/health`)
-- Automated tests using pytest and HTTPX
+- Pydantic Settings environment configuration (`apps/api/config.py`)
+- Centralized error handling (`apps/api/core/errors.py`)
+- Structured logging (`apps/api/core/logging.py`)
+- Application liveness endpoint (`GET /api/v1/health`)
+- Database readiness check (`GET /api/v1/health/ready`)
+- SQLAlchemy 2.x async engine and session factory (`apps/api/db/session.py`)
+- SQLAlchemy Declarative Base (`apps/api/db/base.py`)
+- Alembic database migration environment (`alembic/`)
+- Repository isolation boundary (`apps/api/repositories/`)
+- Local Docker PostgreSQL configuration (`docker-compose.yml`)
+- Automated test suites for API & Database (`tests/api/`, `tests/db/`)
 
 ## Planned Capabilities (Not Implemented)
 
-- Database persistence & migrations (PostgreSQL / SQLAlchemy)
+- Domain models (User, Message, Conversation, Task, Memory, etc.)
+- Business logic & service layer
 - Agent runtime & tool execution framework
-- LLM integrations & context assembly
-- Memory systems (working, short-term, long-term)
-- WhatsApp messaging adapter
-- Web Control Center frontend
+- LLM integrations & prompt assembly
+- WhatsApp webhook/polling integration
+- Worker execution engine
+- Web Control Center UI
 
-## Current Phase
+## Local Development
 
-Phase 1 — Backend Foundation.
+### 1. Start PostgreSQL
+```bash
+docker compose up -d
+```
 
-This phase establishes the runnable FastAPI backend boundary. No database,
-LLM, agent, tool, or messaging integration is present.
+### 2. Run Database Migrations
+```bash
+PYTHONPATH=. alembic upgrade head
+```
+
+### 3. Run Tests
+```bash
+PYTHONPATH=. pytest
+```
+
+### 4. Run Linter & Formatter
+```bash
+ruff check .
+ruff format --check .
+```
