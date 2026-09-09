@@ -2,6 +2,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
 
+import apps.api.db.models  # noqa: F401 - Register models with Base.metadata
 from alembic import context
 from apps.api.config import settings
 from apps.api.db.base import Base

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from apps.api.api.v1.routes.conversations import router as conversations_router
 from apps.api.api.v1.routes.health import router as health_router
 from apps.api.config import settings
 from apps.api.core.errors import register_error_handlers
@@ -27,6 +28,7 @@ def create_app() -> FastAPI:
 
     # API v1 routes
     app.include_router(health_router, prefix=settings.api_v1_prefix)
+    app.include_router(conversations_router, prefix=settings.api_v1_prefix)
 
     return app
 

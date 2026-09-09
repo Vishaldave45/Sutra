@@ -23,10 +23,10 @@ phases.
 FastAPI
    │
    ▼
-Application / Services
+Application / Service Layer
    │
    ▼
-Repositories
+Repository Layer
    │
    ▼
 SQLAlchemy (Async)
@@ -44,6 +44,7 @@ apps/api/
 ├── api/
 │   └── v1/
 │       └── routes/
+│           ├── conversations.py
 │           └── health.py
 │
 ├── core/
@@ -54,17 +55,31 @@ apps/api/
 │   ├── base.py
 │   ├── session.py
 │   └── models/
+│       └── conversation.py
 │
-└── repositories/
+├── repositories/
+│   ├── conversation.py
+│   └── message.py
+│
+├── schemas/
+│   └── conversation.py
+│
+└── services/
+    └── conversation.py
 
 alembic/
 ├── versions/
+│   ├── 66fcee048c39_initial_empty_schema.py
+│   └── f70c220788dc_create_conversations_and_messages_tables.py
 ├── env.py
 └── script.py.mako
 
 tests/
 ├── api/
+│   ├── test_conversations.py
+│   └── test_health.py
 └── db/
+    └── test_database.py
 ```
 
 ## Implemented Capabilities
@@ -77,20 +92,29 @@ tests/
 - Database readiness check (`GET /api/v1/health/ready`)
 - SQLAlchemy 2.x async engine and session factory (`apps/api/db/session.py`)
 - SQLAlchemy Declarative Base (`apps/api/db/base.py`)
+- Conversation domain entities: `Conversation` and `Message` (`apps/api/db/models/conversation.py`)
+- Explicit message roles: `user`, `assistant`, `system` (native PostgreSQL Enum)
+- Foreign key cascade: deleting a conversation cascades to all its messages
+- Clean separation: API -> Service (`ConversationService`) -> Repository (`ConversationRepository`, `MessageRepository`) -> DB
+- Conversation API endpoints:
+  - `POST /api/v1/conversations`: Create conversation
+  - `GET /api/v1/conversations`: List conversations
+  - `GET /api/v1/conversations/{id}`: Get conversation
+  - `POST /api/v1/conversations/{id}/messages`: Create & persist message
+  - `GET /api/v1/conversations/{id}/messages`: List messages in chronological order
 - Alembic database migration environment (`alembic/`)
-- Repository isolation boundary (`apps/api/repositories/`)
 - Local Docker PostgreSQL configuration (`docker-compose.yml`)
-- Automated test suites for API & Database (`tests/api/`, `tests/db/`)
+- Automated test suites (20 tests passing)
 
 ## Planned Capabilities (Not Implemented)
 
-- Domain models (User, Message, Conversation, Task, Memory, etc.)
-- Business logic & service layer
-- Agent runtime & tool execution framework
-- LLM integrations & prompt assembly
-- WhatsApp webhook/polling integration
-- Worker execution engine
-- Web Control Center UI
+- LLM Provider layer & completions
+- Agent runtime, task loops, & agent runs
+- Sessions (runtime context separation)
+- Memory systems (working, short-term, long-term)
+- WhatsApp messaging adapter
+- Web Control Center frontend
+- Authentication & authorization
 
 ## Local Development
 

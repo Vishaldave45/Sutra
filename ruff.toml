@@ -9,7 +9,9 @@ select = [
     "UP",  # pyupgrade
     "B",   # flake8-bugbear
 ]
-ignore = []
+ignore = [
+    "B008",  # do not perform function calls in argument defaults (standard for FastAPI Depends/Query)
+]
 
 [lint.isort]
 known-first-party = ["apps"]

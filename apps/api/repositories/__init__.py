@@ -1,5 +1,6 @@
-"""Persistence Repositories package.
+"""Persistence Repositories package."""
 
-Repositories isolate database queries and session handling from business services.
-Domain repositories will be introduced in subsequent phases.
-"""
+from apps.api.repositories.conversation import ConversationRepository
+from apps.api.repositories.message import MessageRepository
+
+__all__ = ["ConversationRepository", "MessageRepository"]
