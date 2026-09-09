@@ -11,14 +11,13 @@ Observe -> Understand -> Remember -> Suggest -> Act -> Learn.
 
 ## Current Phase
 
-Phase 3 — Conversation System.
+Phase 4 — LLM Provider Layer.
 
 STATUS: 🔒 LOCKED (Implemented, awaiting architectural review)
 
 ## Current Objective
 
-Implement Sutra's persistent conversation and message domain with strict separation:
-`Conversation` / `Message` distinct from `Session` and `AgentRun`.
+Create a provider-independent LLM abstraction that future Sutra services and the future Agent Runtime can use, without introducing an agent framework or coupling LLM calls to conversation routes.
 
 ## Completed Work
 
@@ -46,63 +45,69 @@ Implement Sutra's persistent conversation and message domain with strict separat
 ### Phase 3 — Conversation System
 - Implemented domain models `Conversation` and `Message` in `apps/api/db/models/conversation.py`.
 - Message roles strictly constrained to `user`, `assistant`, `system` via Enum.
-- Explicit database indices created for conversation timestamps and message chronological retrieval (`conversation_id`, `created_at`, `id`).
 - Implemented migration `f70c220788dc_create_conversations_and_messages_tables.py` and upgraded to `head`.
-- Created Pydantic schemas in `apps/api/schemas/conversation.py` with validation rejecting empty/whitespace messages.
+- Created Pydantic schemas in `apps/api/schemas/conversation.py`.
 - Created `ConversationRepository` and `MessageRepository` in `apps/api/repositories/`.
-- Created `ConversationService` in `apps/api/services/conversation.py` enforcing domain rules, 404 on missing conversations, and 422 on invalid content.
-- Created conversation API routes in `apps/api/api/v1/routes/conversations.py` registered on `/api/v1/conversations`.
-- Created comprehensive test suite in `tests/api/test_conversations.py`.
-- All 20 tests pass, Ruff check & format clean.
+- Created `ConversationService` in `apps/api/services/conversation.py`.
+- Created conversation API routes in `apps/api/api/v1/routes/conversations.py`.
+
+### Phase 4 — LLM Provider Layer
+- Defined provider-neutral models `LLMMessage`, `LLMRequest`, `LLMResponse`, `LLMUsage` in `packages/agent_core/llm/models.py`.
+- Defined abstract base class `LLMProvider` in `packages/agent_core/llm/interface.py`.
+- Created normalized error hierarchy in `packages/agent_core/llm/errors.py`.
+- Implemented deterministic `MockLLMProvider` in `packages/agent_core/llm/mock.py`.
+- Implemented official OpenAI SDK client wrapper `OpenAIProvider` in `packages/agent_core/llm/providers/openai.py` with isolated dependencies, configurable timeout, transparent transient retries, and sanitized error mapping.
+- Added LLM configuration settings (`apps/api/config.py`, `.env.example`).
+- Created test suite in `tests/test_llm_provider.py` covering models, mock provider, OpenAI construction, error normalization, retry exhaustion, timeout, rate limits, and token usage tracking.
+- All 35 tests pass, Ruff check & format clean.
 
 ## Implemented vs Planned
 
 ### IMPLEMENTED
 - Domain models: `Conversation`, `Message`, `MessageRole`
-- API endpoints:
-  - `POST /api/v1/conversations`
-  - `GET /api/v1/conversations`
-  - `GET /api/v1/conversations/{id}`
-  - `POST /api/v1/conversations/{id}/messages`
-  - `GET /api/v1/conversations/{id}/messages`
-- Foreign key cascade: deleting conversation deletes all related messages
-- Chronological message ordering by `(created_at, id)`
-- Error handling: NotFoundError (404), ValidationError (422)
-- Unit and integration tests (20 tests passing)
+- API endpoints: `/api/v1/conversations`, `/api/v1/health`
+- LLM Provider abstraction: `LLMProvider`, `OpenAIProvider`, `MockLLMProvider`
+- Provider contracts: `LLMRequest`, `LLMResponse`, `LLMUsage`
+- Error normalization & retry policy for transient LLM failures
+- Automated test suites (35 tests passing)
 
 ### PLANNED (Not Implemented)
+> The LLM provider layer exists, but Sutra's Agent Runtime has not yet been implemented.
+- Agent Runtime & reasoning loop
+- Agent execution runs (`AgentRun`)
 - Sessions (runtime context separation)
-- Agent runs & task loops
-- LLM connectivity & prompt generation
-- WhatsApp webhook/polling integration
+- Automated AI responses on message creation
+- Tool calling & function execution
 - Memory systems (working, short-term, long-term)
+- WhatsApp webhook/polling integration
 - Worker execution engine
 - Web Control Center UI
 - Authentication & authorization
 
 ## Current Work
 
-Phase 3 implementation complete. Ready for architectural review.
+Phase 4 implementation complete. Ready for architectural review.
 
 ## Next Work
 
-Phase 4 — LLM Provider Layer.
-Awaiting Phase 3 review and acceptance before unlocking.
+Phase 5 — Agent Runtime (reasoning loop, execution boundaries, prompt composition).
+Awaiting Phase 4 review and acceptance before unlocking.
 
 ## Important Decisions
 
-- `Conversation` != `Session` != `AgentRun`: Session and AgentRun concepts are intentionally not implemented in Phase 3.
-- `ondelete="CASCADE"` chosen for `Message.conversation_id`: deleting a conversation deletes its messages to prevent orphaned message records.
-- Chronological ordering enforced at DB level using `ORDER BY created_at ASC, id ASC` with composite index `ix_messages_conversation_created_at`.
-- No LLM integration or automated responses exist in Phase 3; message endpoint is purely persistence.
+- The LLM provider layer is strictly decoupled from API routes and `POST /api/v1/conversations/{id}/messages`. No automated LLM response is triggered on message persistence.
+- Official OpenAI SDK dependency is strictly confined to `packages/agent_core/llm/providers/openai.py`.
+- Raw vendor SDK exceptions never cross the abstraction boundary; all are normalized to `LLMError` subclasses.
+- Retries are restricted exclusively to transient errors (server 5xx, timeouts, connection drops, rate limits). Non-retryable errors (authentication, bad requests) fail immediately without retries.
 - No git commits created without explicit instruction.
 
 ## Testing Status
 
-- Pytest: 20 tests passing across `tests/api/test_conversations.py`, `tests/api/test_health.py`, and `tests/db/test_database.py`.
-- Ruff: Checks and formatting passed cleanly across all 36 files.
+- Pytest: 35 tests passing across all suites (`tests/api/`, `tests/db/`, `tests/test_llm_provider.py`).
+- Ruff: Checks and formatting passed cleanly across all 45 files.
+- Real network calls avoided: all provider tests use isolated mocks and fakes.
 
 ## Environment Status
 
-- Python 3.12 virtual environment (`.venv/`) configured.
-- PostgreSQL 16 container `sutra_postgres` running and healthy on port 5444.
+- Python 3.12 virtual environment (`.venv/`) configured with `openai` and existing dependencies.
+- PostgreSQL 16 container `sutra_postgres` running on port 5444.

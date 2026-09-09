@@ -40,8 +40,12 @@ async def test_list_conversations() -> None:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Create two conversations
-        res1 = await client.post("/api/v1/conversations", json={"metadata": {"tag": "1"}})
-        res2 = await client.post("/api/v1/conversations", json={"metadata": {"tag": "2"}})
+        res1 = await client.post(
+            "/api/v1/conversations", json={"metadata": {"tag": "1"}}
+        )
+        res2 = await client.post(
+            "/api/v1/conversations", json={"metadata": {"tag": "2"}}
+        )
         assert res1.status_code == 201
         assert res2.status_code == 201
 
@@ -77,7 +81,11 @@ async def test_create_messages_with_valid_roles() -> None:
         # 1. System message
         msg_sys = await client.post(
             f"/api/v1/conversations/{conv_id}/messages",
-            json={"role": "system", "content": "You are Sutra OS.", "metadata": {"origin": "init"}},
+            json={
+                "role": "system",
+                "content": "You are Sutra OS.",
+                "metadata": {"origin": "init"},
+            },
         )
         assert msg_sys.status_code == 201
         sys_data = msg_sys.json()
@@ -98,7 +106,10 @@ async def test_create_messages_with_valid_roles() -> None:
         # 3. Assistant message
         msg_ast = await client.post(
             f"/api/v1/conversations/{conv_id}/messages",
-            json={"role": "assistant", "content": "Greetings. How can I assist you today?"},
+            json={
+                "role": "assistant",
+                "content": "Greetings. How can I assist you today?",
+            },
         )
         assert msg_ast.status_code == 201
         ast_data = msg_ast.json()
@@ -163,7 +174,11 @@ async def test_message_chronological_ordering() -> None:
         conv_id = conv_res.json()["id"]
 
         # Add sequential messages
-        contents = ["Msg 1: System prompt", "Msg 2: User question", "Msg 3: Assistant answer"]
+        contents = [
+            "Msg 1: System prompt",
+            "Msg 2: User question",
+            "Msg 3: Assistant answer",
+        ]
         roles = ["system", "user", "assistant"]
 
         for r, c in zip(roles, contents, strict=True):
@@ -214,11 +229,8 @@ async def test_foreign_key_cascade_behavior() -> None:
     # Verify message was also deleted via CASCADE
     async with session_maker() as session:
         msg = (
-            await session.execute(
-                select(Message).where(Message.id == msg_id)
-            )
+            await session.execute(select(Message).where(Message.id == msg_id))
         ).scalar_one_or_none()
         assert msg is None
 
     await test_engine.dispose()
-

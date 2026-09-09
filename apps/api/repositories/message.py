@@ -43,4 +43,3 @@ class MessageRepository:
             .offset(offset)
         )
         return list(result.scalars().all())
-

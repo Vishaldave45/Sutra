@@ -29,7 +29,7 @@
 - [x] Implement readiness endpoint `GET /api/v1/health/ready`.
 - [x] Implement database test suite (`tests/db/test_database.py`).
 
-## Phase 3 — Conversation System (Implemented & Verified)
+## Phase 3 — Conversation System (Completed & Committed)
 
 - [x] Create `Conversation` & `Message` SQLAlchemy models with native Enum roles (`apps/api/db/models/conversation.py`).
 - [x] Create migration `f70c220788dc` for conversations and messages.
@@ -37,20 +37,31 @@
 - [x] Create repositories `ConversationRepository` & `MessageRepository` (`apps/api/repositories/`).
 - [x] Create `ConversationService` (`apps/api/services/conversation.py`).
 - [x] Create API endpoints on `/api/v1/conversations` (`apps/api/api/v1/routes/conversations.py`).
-- [x] Enforce empty & whitespace content validation, 404 handling, and chronological ordering.
+- [x] Enforce validation, 404 handling, and chronological ordering.
 - [x] Create comprehensive domain test suite (`tests/api/test_conversations.py`).
+
+## Phase 4 — LLM Provider Layer (Implemented & Verified)
+
+- [x] Define provider-neutral contracts: `LLMRequest`, `LLMResponse`, `LLMUsage` (`packages/agent_core/llm/models.py`).
+- [x] Define abstract base class `LLMProvider` (`packages/agent_core/llm/interface.py`).
+- [x] Implement deterministic `MockLLMProvider` (`packages/agent_core/llm/mock.py`).
+- [x] Implement `OpenAIProvider` with official OpenAI SDK (`packages/agent_core/llm/providers/openai.py`).
+- [x] Implement normalized exception hierarchy (`packages/agent_core/llm/errors.py`).
+- [x] Implement configurable timeouts and selective retries for transient errors.
+- [x] Add LLM settings to configuration (`apps/api/config.py`, `.env.example`).
+- [x] Create test suite with mocks/fakes (`tests/test_llm_provider.py`).
 - [ ] Architectural review & acceptance.
 
-## Phase 4 — LLM Provider Layer (Locked / Planned)
+## Phase 5 — Agent Runtime (Locked / Planned)
 
-- [ ] Design LLM client interface & abstraction.
-- [ ] Implement provider client integration.
-- [ ] Connect conversation context to generation flow.
+- [ ] Design Agent Runtime and reasoning loop.
+- [ ] Define Agent execution runs (`AgentRun`).
+- [ ] Connect LLM Provider to agent execution.
 
 ## Later Phases (Planned)
 
-- [ ] Agent Runtime & Agent Runs
 - [ ] Sessions & Execution Context
+- [ ] Tool Calling & Function Execution
 - [ ] Memory System
 - [ ] WhatsApp Integration
 - [ ] Web Control Center

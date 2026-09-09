@@ -93,4 +93,3 @@ async def list_messages(
         offset=offset,
     )
     return [MessageRead.model_validate(m) for m in messages]
-

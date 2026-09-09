@@ -38,4 +38,3 @@ class ConversationRepository:
             select(Conversation.id).where(Conversation.id == conversation_id)
         )
         return result.first() is not None
-

@@ -26,6 +26,11 @@ FastAPI
 Application / Service Layer
    │
    ▼
+LLM Provider Abstraction (`packages/agent_core/llm/`)
+   │
+   ├── OpenAIProvider (`openai`)
+   └── MockLLMProvider (Deterministic testing)
+
 Repository Layer
    │
    ▼
@@ -67,6 +72,15 @@ apps/api/
 └── services/
     └── conversation.py
 
+packages/agent_core/
+└── llm/
+    ├── errors.py
+    ├── interface.py
+    ├── mock.py
+    ├── models.py
+    └── providers/
+        └── openai.py
+
 alembic/
 ├── versions/
 │   ├── 66fcee048c39_initial_empty_schema.py
@@ -78,8 +92,9 @@ tests/
 ├── api/
 │   ├── test_conversations.py
 │   └── test_health.py
-└── db/
-    └── test_database.py
+├── db/
+│   └── test_database.py
+└── test_llm_provider.py
 ```
 
 ## Implemented Capabilities
@@ -93,24 +108,27 @@ tests/
 - SQLAlchemy 2.x async engine and session factory (`apps/api/db/session.py`)
 - SQLAlchemy Declarative Base (`apps/api/db/base.py`)
 - Conversation domain entities: `Conversation` and `Message` (`apps/api/db/models/conversation.py`)
-- Explicit message roles: `user`, `assistant`, `system` (native PostgreSQL Enum)
+- Message roles: `user`, `assistant`, `system` (native PostgreSQL Enum)
 - Foreign key cascade: deleting a conversation cascades to all its messages
-- Clean separation: API -> Service (`ConversationService`) -> Repository (`ConversationRepository`, `MessageRepository`) -> DB
-- Conversation API endpoints:
-  - `POST /api/v1/conversations`: Create conversation
-  - `GET /api/v1/conversations`: List conversations
-  - `GET /api/v1/conversations/{id}`: Get conversation
-  - `POST /api/v1/conversations/{id}/messages`: Create & persist message
-  - `GET /api/v1/conversations/{id}/messages`: List messages in chronological order
-- Alembic database migration environment (`alembic/`)
-- Local Docker PostgreSQL configuration (`docker-compose.yml`)
-- Automated test suites (20 tests passing)
+- Conversation API endpoints (`/api/v1/conversations`)
+- Provider-independent LLM abstraction (`packages/agent_core/llm/`):
+  - Abstract base interface `LLMProvider` (`generate(request) -> response`)
+  - Provider-neutral request/response models (`LLMRequest`, `LLMResponse`, `LLMUsage`)
+  - OpenAI provider implementation (`OpenAIProvider`) isolated in `packages/agent_core/llm/providers/openai.py`
+  - Deterministic test provider (`MockLLMProvider`)
+  - Normalized error hierarchy (`LLMConfigurationError`, `LLMAuthenticationError`, `LLMInvalidRequestError`, `LLMRateLimitError`, `LLMTimeoutError`, `LLMTransientError`, `LLMUnexpectedError`)
+  - Configurable timeouts and retries for transient failures only
+  - Usage/token tracking normalization
+- Automated test suites (35 tests passing)
 
 ## Planned Capabilities (Not Implemented)
 
-- LLM Provider layer & completions
-- Agent runtime, task loops, & agent runs
+> **Important Notice:** The LLM provider layer exists, but Sutra's Agent Runtime has not yet been implemented.
+
+- Agent Runtime & reasoning loop
+- Agent execution runs (`AgentRun`)
 - Sessions (runtime context separation)
+- Tool calling & function execution
 - Memory systems (working, short-term, long-term)
 - WhatsApp messaging adapter
 - Web Control Center frontend
