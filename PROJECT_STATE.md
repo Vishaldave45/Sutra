@@ -11,13 +11,13 @@ Observe -> Understand -> Remember -> Suggest -> Act -> Learn.
 
 ## Current Phase
 
-Phase 6 — Tool System.
+Phase 7 — Task & Project Domain.
 
 STATUS: 🟡 IMPLEMENTATION COMPLETE (Pending architectural review & acceptance)
 
 ## Current Objective
 
-Complete architectural review and verification for Phase 6 (Tool System).
+Complete architectural review and verification for Phase 7 (Task & Project Domain).
 
 ## Completed Work
 
@@ -82,19 +82,31 @@ Complete architectural review and verification for Phase 6 (Tool System).
 - Added test suites in `tests/test_tool_models.py`, `tests/test_tool_registry.py`, `tests/test_tool_executor.py`.
 - Verified Phase 5 `AgentRuntime` remains strictly single-pass (no tool execution loop).
 
+### Phase 7 — Task & Project Domain
+- Implemented `Project` model with `ProjectStatus` enum (`ACTIVE`, `COMPLETED`, `ARCHIVED`), timestamp invariants, and non-cascade task relationship (`apps/api/db/models/project.py`).
+- Implemented `Task` model with `TaskStatus` enum (`TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED`), `TaskPriority` enum (`LOW`, `MEDIUM`, `HIGH`, `URGENT`), nullable `project_id`, `completed_at` invariant, single and composite indexes (`apps/api/db/models/task.py`).
+- Created and applied Alembic migration `a1b2c3d4e5f6_create_projects_and_tasks_tables.py`.
+- Created Pydantic schemas in `apps/api/schemas/project.py` and `apps/api/schemas/task.py`.
+- Implemented `ProjectRepository` and `TaskRepository` with deterministic sorting (`apps/api/repositories/`).
+- Implemented `ProjectService` and `TaskService` with explicit domain state transitions and terminal-state protection (`apps/api/services/`).
+- Implemented REST API routes with explicit lifecycle endpoints (`/start`, `/complete`, `/cancel`) and status mutation protection on PATCH (`apps/api/api/v1/routes/`).
+- Added domain test suites in `tests/api/test_projects.py`, `tests/api/test_tasks.py`, and AST boundary check in `tests/test_domain_boundaries.py`.
+
 ## Implemented vs Planned
 
 ### IMPLEMENTED
-- Domain models: `Conversation`, `Message`, `MessageRole`
-- API endpoints: `/api/v1/conversations`, `/api/v1/health`
+- Domain models: `Conversation`, `Message`, `MessageRole`, `Project`, `ProjectStatus`, `Task`, `TaskStatus`, `TaskPriority`
+- API endpoints: `/api/v1/conversations`, `/api/v1/health`, `/api/v1/projects`, `/api/v1/tasks`
 - LLM Provider abstraction: `LLMProvider`, `OpenAIProvider`, `MockLLMProvider`
 - Native single-pass Agent Runtime: `AgentRuntime`, `AgentRun`, `AgentRunStatus`
 - Tool System infrastructure: `Tool`, `ToolDefinition`, `ToolRegistry`, `ToolExecutor`, `ToolResult`
-- Automated test suites (69 tests passing across all suites)
+- Task & Project domain-of-record layer
+- Automated test suites (84 tests passing across all suites)
 
 ### PLANNED (Not Implemented)
 - Agent Tool Calling / ReAct Loop
-- Task & Project domain (Phase 7)
+- Subtasks & Task Dependencies
+- Recurrence, Reminders & Scheduling
 - Memory systems (Phase 8)
 - Context Engine (Phase 9)
 - WhatsApp integration (Phase 12)
@@ -103,23 +115,23 @@ Complete architectural review and verification for Phase 6 (Tool System).
 
 ## Current Work
 
-Awaiting architectural review and acceptance of Phase 6.
+Awaiting architectural review and acceptance of Phase 7.
 
 ## Next Work
 
-Phase 7 — Task & Project Domain.
+Phase 8 — Memory Systems.
 
 ## Important Decisions
 
-- The tool system is pure capability infrastructure; no ReAct loop, planner, or autonomous execution loop is implemented.
-- `ToolExecutor` centrally owns execution timeout; individual tools never implement their own timeout.
-- `ToolRegistry` is strictly in-memory and isolated with zero database dependency.
-- `AgentRuntime` remains strictly single-pass; it is not wired to `ToolExecutor`.
-- The tool system has zero dependency on `apps.api`, `fastapi`, `sqlalchemy`, `openai`, or `openclaw`.
+- Phase 7 is strictly a domain-of-record layer: zero LLM, agent runtime, tool, or context engine dependencies.
+- State transitions on tasks (`TODO -> IN_PROGRESS`, `TODO -> DONE`, `TODO -> CANCELLED`, `IN_PROGRESS -> DONE`, `IN_PROGRESS -> CANCELLED`) are strictly enforced by `TaskService`. Terminal states (`DONE`, `CANCELLED`) cannot be reopened.
+- `Task` PATCH endpoint strictly disallows arbitrary status changes; transitions must use dedicated lifecycle POST endpoints.
+- Tasks are never cascade deleted when projects are deleted/archived.
+- No AI smart ranking: task listing follows explicit, deterministic sorting (`due_at asc nulls_last, created_at desc, id desc`).
 
 ## Testing Status
 
-- Pytest: 69 tests passing across all suites (`tests/api/`, `tests/db/`, `tests/test_llm_provider.py`, `tests/test_agent_runtime.py`, `tests/test_tool_*.py`).
+- Pytest: 84 tests passing across all suites (`tests/api/`, `tests/db/`, `tests/test_*.py`).
 - Ruff: Checks and formatting passed cleanly across all files.
 
 ## Environment Status

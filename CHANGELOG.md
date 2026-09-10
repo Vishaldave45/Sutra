@@ -3,6 +3,19 @@
 ## Unreleased
 
 ### Added
+- Phase 7: Task & Project domain-of-record layer:
+  - `Project` domain model with `ProjectStatus` (`ACTIVE`, `COMPLETED`, `ARCHIVED`), timestamp invariants, and non-cascade task relationship.
+  - `Task` domain model with `TaskStatus` (`TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED`), `TaskPriority` (`LOW`, `MEDIUM`, `HIGH`, `URGENT`), nullable `project_id`, single and composite indexes.
+  - Alembic migration `a1b2c3d4e5f6_create_projects_and_tasks_tables.py`.
+  - Pydantic validation schemas in `apps/api/schemas/project.py` and `apps/api/schemas/task.py`.
+  - `ProjectRepository` and `TaskRepository` with deterministic sorting.
+  - `ProjectService` and `TaskService` with explicit state transition lifecycle operations and terminal-state protection.
+  - REST API routes on `/api/v1/projects` and `/api/v1/tasks` with explicit lifecycle actions (`/start`, `/complete`, `/cancel`).
+  - Unit, integration, invariant, and AST domain-boundary test suites.
+
+## 0.6.0 - 2026-09-10 (Phase 6)
+
+### Added
 - Phase 6: Tool System capability layer in `packages/agent_core/tools/`:
   - Strongly typed `ToolDefinition` with Pydantic JSON Schema generation (`input_schema`, `output_schema`).
   - Five-tier action risk classification (`READ`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) and capability scopes (`permission: list[str]`).

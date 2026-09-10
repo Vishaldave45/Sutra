@@ -61,7 +61,7 @@
 - [x] Implement offline test suite with `MockLLMProvider` (`tests/test_agent_runtime.py`).
 - [x] Architectural review & acceptance (Commit `9c7019d`).
 
-## Phase 6 — Tool System (Implemented, Pending Acceptance)
+## Phase 6 — Tool System (Completed & Committed)
 
 - [x] Create strongly typed `ToolDefinition` with Pydantic JSON Schema generation.
 - [x] Implement action risk levels (`READ`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) and `permission: list[str]`.
@@ -71,11 +71,22 @@
 - [x] Implement dedicated tool error taxonomy with credential scrubbing.
 - [x] Implement deterministic reference tools (`EchoTool`, `DeterministicFailureTool`, `DeterministicTimeoutTool`, `InvalidOutputTool`).
 - [x] Implement comprehensive unit tests (`tests/test_tool_*.py`).
+- [x] Architectural review & acceptance (Commit `2829b07`).
+
+## Phase 7 — Task & Project Domain (Implemented, Pending Acceptance)
+
+- [x] Create `Project` model with `ProjectStatus` enum and timestamp invariants (`apps/api/db/models/project.py`).
+- [x] Create `Task` model with `TaskStatus` and `TaskPriority` enums, nullable `project_id`, single and composite indexes (`apps/api/db/models/task.py`).
+- [x] Create Alembic migration `a1b2c3d4e5f6` for `projects` and `tasks` tables.
+- [x] Implement `ProjectRepository` and `TaskRepository` with deterministic sorting.
+- [x] Implement `ProjectService` and `TaskService` with explicit lifecycle state transitions and terminal-state protection.
+- [x] Implement REST API endpoints for projects and tasks with explicit lifecycle actions (`/start`, `/complete`, `/cancel`).
+- [x] Disallow status mutation on Task PATCH.
+- [x] Add comprehensive test suites (`tests/api/test_projects.py`, `tests/api/test_tasks.py`, `tests/test_domain_boundaries.py`).
 - [ ] Architectural review & acceptance.
 
 ## Later Phases (Planned)
 
-- [ ] Phase 7 — Task & Project Domain
 - [ ] Phase 8 — Memory Systems
 - [ ] Phase 9 — Context Engine
 - [ ] Phase 12 — WhatsApp Integration

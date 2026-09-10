@@ -5,6 +5,8 @@ from fastapi import FastAPI
 
 from apps.api.api.v1.routes.conversations import router as conversations_router
 from apps.api.api.v1.routes.health import router as health_router
+from apps.api.api.v1.routes.projects import router as projects_router
+from apps.api.api.v1.routes.tasks import router as tasks_router
 from apps.api.config import settings
 from apps.api.core.errors import register_error_handlers
 from apps.api.core.logging import setup_logging
@@ -29,6 +31,8 @@ def create_app() -> FastAPI:
     # API v1 routes
     app.include_router(health_router, prefix=settings.api_v1_prefix)
     app.include_router(conversations_router, prefix=settings.api_v1_prefix)
+    app.include_router(projects_router, prefix=settings.api_v1_prefix)
+    app.include_router(tasks_router, prefix=settings.api_v1_prefix)
 
     return app
 

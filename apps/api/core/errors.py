@@ -38,6 +38,48 @@ class ValidationError(SutraAppError):
         super().__init__(message=message, status_code=422, details=details)
 
 
+# Domain-specific errors for Phase 7
+class ProjectNotFound(NotFoundError):
+    """Project not found."""
+
+    def __init__(self, message: str = "Project not found", details: Any = None) -> None:
+        super().__init__(message=message, details=details)
+
+
+class TaskNotFound(NotFoundError):
+    """Task not found."""
+
+    def __init__(self, message: str = "Task not found", details: Any = None) -> None:
+        super().__init__(message=message, details=details)
+
+
+class ProjectNotFoundForTask(NotFoundError):
+    """Referenced project does not exist when creating/updating task."""
+
+    def __init__(
+        self, message: str = "Referenced project not found", details: Any = None
+    ) -> None:
+        super().__init__(message=message, details=details)
+
+
+class InvalidTaskTransition(SutraAppError):
+    """Invalid task state transition."""
+
+    def __init__(
+        self, message: str = "Invalid task state transition", details: Any = None
+    ) -> None:
+        super().__init__(message=message, status_code=409, details=details)
+
+
+class InvalidProjectTransition(SutraAppError):
+    """Invalid project state transition."""
+
+    def __init__(
+        self, message: str = "Invalid project state transition", details: Any = None
+    ) -> None:
+        super().__init__(message=message, status_code=409, details=details)
+
+
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(SutraAppError)
     async def sutra_app_error_handler(
