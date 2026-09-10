@@ -11,13 +11,13 @@ Observe -> Understand -> Remember -> Suggest -> Act -> Learn.
 
 ## Current Phase
 
-Phase 5 — Agent Runtime.
+Phase 6 — Tool System.
 
 STATUS: 🟡 IMPLEMENTATION COMPLETE (Pending architectural review & acceptance)
 
 ## Current Objective
 
-Complete architectural review and verification for Phase 5 (Native Single-Pass Agent Runtime).
+Complete architectural review and verification for Phase 6 (Tool System).
 
 ## Completed Work
 
@@ -61,28 +61,26 @@ Complete architectural review and verification for Phase 5 (Native Single-Pass A
 - Created test suite in `tests/test_llm_provider.py`.
 - Formally accepted and committed at `e06151b`.
 
-### Phase 5 — Agent Runtime (Implementation Complete)
-- Implemented native single-pass Agent Runtime in `packages/agent_core/agent/runtime.py`:
-  - Finite single-pass execution via `LLMProvider.generate()`.
-  - Deterministic message assembly (System prompt -> Ordered history -> Current user message).
-  - Explicit message translation boundary (`translate_message_to_llm`) converting generic objects/dicts/schemas to `LLMMessage` with ZERO database imports.
-  - Runtime error sanitization helper (`sanitize_runtime_error`) scrubbing potential secret leaks and preserving normalized LLM provider errors.
-- Implemented in-memory `AgentRun` model and `AgentRunStatus` enum (`packages/agent_core/agent/models.py`):
-  - Strict statuses: `CREATED`, `RUNNING`, `COMPLETED`, `FAILED`.
-  - Explicit lifecycle transitions (`CREATED -> RUNNING -> COMPLETED` / `CREATED -> RUNNING -> FAILED`).
-  - Zero database persistence; completely decoupled from PostgreSQL.
-- Implemented runtime error hierarchy in `packages/agent_core/agent/errors.py` (`AgentError`, `AgentInputError`, `AgentConfigurationError`).
-- Added deterministic offline test suite in `tests/test_agent_runtime.py` covering all requirements with `MockLLMProvider`.
+### Phase 5 — Agent Runtime
+- Implemented native single-pass Agent Runtime in `packages/agent_core/agent/runtime.py`.
+- Implemented in-memory `AgentRun` model and `AgentRunStatus` enum (`packages/agent_core/agent/models.py`).
 - Verified provider-neutral and database-free dependency boundary (zero `openai`, zero `apps.api.db`, zero `sqlalchemy` imports in `packages/agent_core/agent/`).
+- Formally accepted and committed at `9c7019d`.
 
-### Architecture Documentation Backfill
-- ADR-001: Backend Foundation and Layered Architecture (`docs/decisions/ADR-001-backend-architecture.md`).
-- ADR-002: Database Architecture and Persistence Boundaries (`docs/decisions/ADR-002-database-architecture.md`).
-- ADR-003: LLM Provider Abstraction and Boundary Isolation (`docs/decisions/ADR-003-llm-provider-architecture.md`).
-- Conversation Architecture & Model specification (`docs/architecture/conversation-model.md`).
-- Tool Risk & Action Classification Model (`docs/security/tool-risk-model.md`).
-- OpenClaw Integration Principles (`docs/architecture/openclaw-integration-principles.md`).
-- Git Development & Operational Integrity policy (`docs/operations/git-development.md`).
+### Phase 6 — Tool System (Implementation Complete)
+- Implemented strongly typed tool definition contracts and models in `packages/agent_core/tools/models.py`:
+  - `ToolDefinition` with Pydantic JSON Schema generation (`input_schema`, `output_schema`).
+  - Action risk classification using Sutra's five-tier model (`READ`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`).
+  - Capability scope declaration via `permission: list[str]`.
+  - Declarative retry metadata (`ToolRetryPolicy`) and semantic `idempotent: bool` flag.
+  - Normalized `ToolResult` model.
+- Implemented abstract base class `Tool` in `packages/agent_core/tools/interface.py`.
+- Implemented deterministic, isolated `ToolRegistry` in `packages/agent_core/tools/registry.py`.
+- Implemented `ToolExecutor` in `packages/agent_core/tools/executor.py` enforcing input validation, centralized execution timeout, output validation, and normalized results.
+- Implemented error taxonomy in `packages/agent_core/tools/errors.py` with credential scrubbing.
+- Implemented deterministic reference tools in `packages/agent_core/tools/reference.py` (`EchoTool`, `DeterministicFailureTool`, `DeterministicTimeoutTool`, `InvalidOutputTool`).
+- Added test suites in `tests/test_tool_models.py`, `tests/test_tool_registry.py`, `tests/test_tool_executor.py`.
+- Verified Phase 5 `AgentRuntime` remains strictly single-pass (no tool execution loop).
 
 ## Implemented vs Planned
 
@@ -90,14 +88,12 @@ Complete architectural review and verification for Phase 5 (Native Single-Pass A
 - Domain models: `Conversation`, `Message`, `MessageRole`
 - API endpoints: `/api/v1/conversations`, `/api/v1/health`
 - LLM Provider abstraction: `LLMProvider`, `OpenAIProvider`, `MockLLMProvider`
-- Provider contracts: `LLMRequest`, `LLMResponse`, `LLMUsage`
 - Native single-pass Agent Runtime: `AgentRuntime`, `AgentRun`, `AgentRunStatus`
-- In-memory execution record: `AgentRun`
-- Deterministic message translation and prompt assembly
-- Automated test suites (50 tests passing across all suites)
+- Tool System infrastructure: `Tool`, `ToolDefinition`, `ToolRegistry`, `ToolExecutor`, `ToolResult`
+- Automated test suites (69 tests passing across all suites)
 
 ### PLANNED (Not Implemented)
-- Tool System & execution sandboxes (Phase 6)
+- Agent Tool Calling / ReAct Loop
 - Task & Project domain (Phase 7)
 - Memory systems (Phase 8)
 - Context Engine (Phase 9)
@@ -107,23 +103,23 @@ Complete architectural review and verification for Phase 5 (Native Single-Pass A
 
 ## Current Work
 
-Awaiting architectural review and acceptance of Phase 5.
+Awaiting architectural review and acceptance of Phase 6.
 
 ## Next Work
 
-Phase 6 — Tool Calling & Function Execution.
+Phase 7 — Task & Project Domain.
 
 ## Important Decisions
 
-- The runtime is strictly single-pass: no ReAct loop, no autonomous loop, no planning loop, no background worker.
-- `AgentRun` is an in-memory execution model and has no database table, no SQLAlchemy model, and no Alembic migration.
-- `AgentRuntime` has zero database dependency, imports neither `apps.api.db` nor `sqlalchemy`, and does not automatically wire into `POST /api/v1/conversations/{id}/messages`.
-- OpenClaw is not integrated into Phase 5; it remains an optional future adapter.
-- The `AgentRuntime` depends only on generic `LLMProvider` abstractions and has zero dependency on provider SDKs.
+- The tool system is pure capability infrastructure; no ReAct loop, planner, or autonomous execution loop is implemented.
+- `ToolExecutor` centrally owns execution timeout; individual tools never implement their own timeout.
+- `ToolRegistry` is strictly in-memory and isolated with zero database dependency.
+- `AgentRuntime` remains strictly single-pass; it is not wired to `ToolExecutor`.
+- The tool system has zero dependency on `apps.api`, `fastapi`, `sqlalchemy`, `openai`, or `openclaw`.
 
 ## Testing Status
 
-- Pytest: 50 tests passing across all suites (`tests/api/`, `tests/db/`, `tests/test_llm_provider.py`, `tests/test_agent_runtime.py`).
+- Pytest: 69 tests passing across all suites (`tests/api/`, `tests/db/`, `tests/test_llm_provider.py`, `tests/test_agent_runtime.py`, `tests/test_tool_*.py`).
 - Ruff: Checks and formatting passed cleanly across all files.
 
 ## Environment Status

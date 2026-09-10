@@ -3,11 +3,25 @@
 ## Unreleased
 
 ### Added
+- Phase 6: Tool System capability layer in `packages/agent_core/tools/`:
+  - Strongly typed `ToolDefinition` with Pydantic JSON Schema generation (`input_schema`, `output_schema`).
+  - Five-tier action risk classification (`READ`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) and capability scopes (`permission: list[str]`).
+  - Declarative retry metadata (`ToolRetryPolicy`) and `idempotent: bool` flag.
+  - Abstract base class `Tool` in `packages/agent_core/tools/interface.py`.
+  - In-memory, deterministic `ToolRegistry` with unique name enforcement.
+  - `ToolExecutor` enforcing pre-execution input validation, centralized execution timeout, output validation, and `ToolResult` normalization.
+  - Dedicated tool error hierarchy (`ToolError`, `ToolDefinitionError`, `InvalidToolSchema`, `DuplicateTool`, `ToolNotFound`, `InvalidToolInput`, `ToolExecutionError`, `ToolTimeoutError`) with secret scrubbing.
+  - Reference tools in `packages/agent_core/tools/reference.py` (`EchoTool`, `DeterministicFailureTool`, `DeterministicTimeoutTool`, `InvalidOutputTool`).
+  - Unit test suites in `tests/test_tool_models.py`, `tests/test_tool_registry.py`, `tests/test_tool_executor.py`.
+
+## 0.5.0 - 2026-09-10 (Phase 5)
+
+### Added
 - Phase 5: Native single-pass Agent Runtime in `packages/agent_core/agent/`:
   - `AgentRuntime`: Single-pass execution engine invoking `LLMProvider.generate()`.
   - `AgentRun` and `AgentRunStatus`: In-memory execution record (`CREATED`, `RUNNING`, `COMPLETED`, `FAILED`).
   - `AgentError`, `AgentInputError`, `AgentConfigurationError`: Explicit runtime exceptions.
-  - `translate_message_to_llm`: Translation boundary converting conversation messages/schemas to `LLMMessage`.
+  - `translate_message_to_llm`: Translation boundary converting conversation messages/schemas to `LLMMessage` with zero database dependencies.
   - Deterministic message assembly (system prompt, chronological history, current user message).
   - Test suite in `tests/test_agent_runtime.py` covering lifecycle, validation, message assembly, translation, failure mapping, and AST-verified provider neutrality.
 - Architecture Decision Records:

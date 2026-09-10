@@ -335,3 +335,20 @@ def test_ast_verify_no_prohibited_imports_in_agent_core() -> None:
                     for forbidden in forbidden_roots:
                         msg = f"Forbidden 'from {node.module} import ...' in {py_file}"
                         assert not node.module.startswith(forbidden), msg
+
+
+@pytest.mark.asyncio
+async def test_agent_runtime_remains_strictly_single_pass_with_tools_present() -> None:
+    # Verify Phase 5 AgentRuntime remains single-pass after Phase 6
+    mock_provider = MockLLMProvider(default_response="Single pass answer")
+    runtime = AgentRuntime(llm_provider=mock_provider)
+
+    run = await runtime.execute(input_text="Answer directly")
+
+    assert run.status == AgentRunStatus.COMPLETED
+    assert run.output_text == "Single pass answer"
+    assert len(mock_provider.recorded_requests) == 1
+    # Check that AgentRuntime has no tool attributes or tool loop
+    assert not hasattr(runtime, "tools")
+    assert not hasattr(runtime, "tool_registry")
+    assert not hasattr(runtime, "executor")
