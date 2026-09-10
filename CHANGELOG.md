@@ -1,6 +1,25 @@
 # Changelog
 
-## Unreleased - Phase 4
+## Unreleased
+
+### Added
+- Phase 5: Native single-pass Agent Runtime in `packages/agent_core/agent/`:
+  - `AgentRuntime`: Single-pass execution engine invoking `LLMProvider.generate()`.
+  - `AgentRun` and `AgentRunStatus`: In-memory execution record (`CREATED`, `RUNNING`, `COMPLETED`, `FAILED`).
+  - `AgentError`, `AgentInputError`, `AgentConfigurationError`: Explicit runtime exceptions.
+  - `translate_message_to_llm`: Translation boundary converting conversation messages/schemas to `LLMMessage`.
+  - Deterministic message assembly (system prompt, chronological history, current user message).
+  - Test suite in `tests/test_agent_runtime.py` covering lifecycle, validation, message assembly, translation, failure mapping, and AST-verified provider neutrality.
+- Architecture Decision Records:
+  - `ADR-001`: Backend Foundation and Layered Architecture (`docs/decisions/ADR-001-backend-architecture.md`).
+  - `ADR-002`: Database Architecture and Persistence Boundaries (`docs/decisions/ADR-002-database-architecture.md`).
+  - `ADR-003`: LLM Provider Abstraction and Boundary Isolation (`docs/decisions/ADR-003-llm-provider-architecture.md`).
+- Domain & Security Architecture Specifications:
+  - Conversation Domain Architecture & Model (`docs/architecture/conversation-model.md`).
+  - Tool Risk & Action Classification Model (`docs/security/tool-risk-model.md`).
+  - OpenClaw Integration Principles (`docs/architecture/openclaw-integration-principles.md`).
+
+## 0.4.0 - 2026-09-09 (Phase 4)
 
 ### Added
 - Provider-independent LLM abstraction layer in `packages/agent_core/llm/`:

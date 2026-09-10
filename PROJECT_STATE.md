@@ -11,13 +11,13 @@ Observe -> Understand -> Remember -> Suggest -> Act -> Learn.
 
 ## Current Phase
 
-Phase 4 — LLM Provider Layer.
+Phase 5 — Agent Runtime.
 
-STATUS: 🔒 LOCKED (Implemented, awaiting architectural review)
+STATUS: 🟡 IMPLEMENTATION COMPLETE (Pending architectural review & acceptance)
 
 ## Current Objective
 
-Create a provider-independent LLM abstraction that future Sutra services and the future Agent Runtime can use, without introducing an agent framework or coupling LLM calls to conversation routes.
+Complete architectural review and verification for Phase 5 (Native Single-Pass Agent Runtime).
 
 ## Completed Work
 
@@ -58,8 +58,31 @@ Create a provider-independent LLM abstraction that future Sutra services and the
 - Implemented deterministic `MockLLMProvider` in `packages/agent_core/llm/mock.py`.
 - Implemented official OpenAI SDK client wrapper `OpenAIProvider` in `packages/agent_core/llm/providers/openai.py` with isolated dependencies, configurable timeout, transparent transient retries, and sanitized error mapping.
 - Added LLM configuration settings (`apps/api/config.py`, `.env.example`).
-- Created test suite in `tests/test_llm_provider.py` covering models, mock provider, OpenAI construction, error normalization, retry exhaustion, timeout, rate limits, and token usage tracking.
-- All 35 tests pass, Ruff check & format clean.
+- Created test suite in `tests/test_llm_provider.py`.
+- Formally accepted and committed at `e06151b`.
+
+### Phase 5 — Agent Runtime (Implementation Complete)
+- Implemented native single-pass Agent Runtime in `packages/agent_core/agent/runtime.py`:
+  - Finite single-pass execution via `LLMProvider.generate()`.
+  - Deterministic message assembly (System prompt -> Ordered history -> Current user message).
+  - Explicit message translation boundary (`translate_message_to_llm`) converting generic objects/dicts/schemas to `LLMMessage` with ZERO database imports.
+  - Runtime error sanitization helper (`sanitize_runtime_error`) scrubbing potential secret leaks and preserving normalized LLM provider errors.
+- Implemented in-memory `AgentRun` model and `AgentRunStatus` enum (`packages/agent_core/agent/models.py`):
+  - Strict statuses: `CREATED`, `RUNNING`, `COMPLETED`, `FAILED`.
+  - Explicit lifecycle transitions (`CREATED -> RUNNING -> COMPLETED` / `CREATED -> RUNNING -> FAILED`).
+  - Zero database persistence; completely decoupled from PostgreSQL.
+- Implemented runtime error hierarchy in `packages/agent_core/agent/errors.py` (`AgentError`, `AgentInputError`, `AgentConfigurationError`).
+- Added deterministic offline test suite in `tests/test_agent_runtime.py` covering all requirements with `MockLLMProvider`.
+- Verified provider-neutral and database-free dependency boundary (zero `openai`, zero `apps.api.db`, zero `sqlalchemy` imports in `packages/agent_core/agent/`).
+
+### Architecture Documentation Backfill
+- ADR-001: Backend Foundation and Layered Architecture (`docs/decisions/ADR-001-backend-architecture.md`).
+- ADR-002: Database Architecture and Persistence Boundaries (`docs/decisions/ADR-002-database-architecture.md`).
+- ADR-003: LLM Provider Abstraction and Boundary Isolation (`docs/decisions/ADR-003-llm-provider-architecture.md`).
+- Conversation Architecture & Model specification (`docs/architecture/conversation-model.md`).
+- Tool Risk & Action Classification Model (`docs/security/tool-risk-model.md`).
+- OpenClaw Integration Principles (`docs/architecture/openclaw-integration-principles.md`).
+- Git Development & Operational Integrity policy (`docs/operations/git-development.md`).
 
 ## Implemented vs Planned
 
@@ -68,46 +91,42 @@ Create a provider-independent LLM abstraction that future Sutra services and the
 - API endpoints: `/api/v1/conversations`, `/api/v1/health`
 - LLM Provider abstraction: `LLMProvider`, `OpenAIProvider`, `MockLLMProvider`
 - Provider contracts: `LLMRequest`, `LLMResponse`, `LLMUsage`
-- Error normalization & retry policy for transient LLM failures
-- Automated test suites (35 tests passing)
+- Native single-pass Agent Runtime: `AgentRuntime`, `AgentRun`, `AgentRunStatus`
+- In-memory execution record: `AgentRun`
+- Deterministic message translation and prompt assembly
+- Automated test suites (50 tests passing across all suites)
 
 ### PLANNED (Not Implemented)
-> The LLM provider layer exists, but Sutra's Agent Runtime has not yet been implemented.
-- Agent Runtime & reasoning loop
-- Agent execution runs (`AgentRun`)
-- Sessions (runtime context separation)
-- Automated AI responses on message creation
-- Tool calling & function execution
-- Memory systems (working, short-term, long-term)
-- WhatsApp webhook/polling integration
-- Worker execution engine
-- Web Control Center UI
-- Authentication & authorization
+- Tool System & execution sandboxes (Phase 6)
+- Task & Project domain (Phase 7)
+- Memory systems (Phase 8)
+- Context Engine (Phase 9)
+- WhatsApp integration (Phase 12)
+- Security & Approval policy implementation (Phase 14)
+- OpenClaw execution backend (future optional adapter)
 
 ## Current Work
 
-Phase 4 implementation complete. Ready for architectural review.
+Awaiting architectural review and acceptance of Phase 5.
 
 ## Next Work
 
-Phase 5 — Agent Runtime (reasoning loop, execution boundaries, prompt composition).
-Awaiting Phase 4 review and acceptance before unlocking.
+Phase 6 — Tool Calling & Function Execution.
 
 ## Important Decisions
 
-- The LLM provider layer is strictly decoupled from API routes and `POST /api/v1/conversations/{id}/messages`. No automated LLM response is triggered on message persistence.
-- Official OpenAI SDK dependency is strictly confined to `packages/agent_core/llm/providers/openai.py`.
-- Raw vendor SDK exceptions never cross the abstraction boundary; all are normalized to `LLMError` subclasses.
-- Retries are restricted exclusively to transient errors (server 5xx, timeouts, connection drops, rate limits). Non-retryable errors (authentication, bad requests) fail immediately without retries.
-- No git commits created without explicit instruction.
+- The runtime is strictly single-pass: no ReAct loop, no autonomous loop, no planning loop, no background worker.
+- `AgentRun` is an in-memory execution model and has no database table, no SQLAlchemy model, and no Alembic migration.
+- `AgentRuntime` has zero database dependency, imports neither `apps.api.db` nor `sqlalchemy`, and does not automatically wire into `POST /api/v1/conversations/{id}/messages`.
+- OpenClaw is not integrated into Phase 5; it remains an optional future adapter.
+- The `AgentRuntime` depends only on generic `LLMProvider` abstractions and has zero dependency on provider SDKs.
 
 ## Testing Status
 
-- Pytest: 35 tests passing across all suites (`tests/api/`, `tests/db/`, `tests/test_llm_provider.py`).
-- Ruff: Checks and formatting passed cleanly across all 45 files.
-- Real network calls avoided: all provider tests use isolated mocks and fakes.
+- Pytest: 50 tests passing across all suites (`tests/api/`, `tests/db/`, `tests/test_llm_provider.py`, `tests/test_agent_runtime.py`).
+- Ruff: Checks and formatting passed cleanly across all files.
 
 ## Environment Status
 
-- Python 3.12 virtual environment (`.venv/`) configured with `openai` and existing dependencies.
+- Python 3.12 virtual environment (`.venv/`) configured.
 - PostgreSQL 16 container `sutra_postgres` running on port 5444.

@@ -40,7 +40,7 @@
 - [x] Enforce validation, 404 handling, and chronological ordering.
 - [x] Create comprehensive domain test suite (`tests/api/test_conversations.py`).
 
-## Phase 4 — LLM Provider Layer (Implemented & Verified)
+## Phase 4 — LLM Provider Layer (Completed & Committed)
 
 - [x] Define provider-neutral contracts: `LLMRequest`, `LLMResponse`, `LLMUsage` (`packages/agent_core/llm/models.py`).
 - [x] Define abstract base class `LLMProvider` (`packages/agent_core/llm/interface.py`).
@@ -50,18 +50,31 @@
 - [x] Implement configurable timeouts and selective retries for transient errors.
 - [x] Add LLM settings to configuration (`apps/api/config.py`, `.env.example`).
 - [x] Create test suite with mocks/fakes (`tests/test_llm_provider.py`).
+- [x] Architectural review & acceptance (Commit `e06151b`).
+
+## Architecture Documentation Backfill (Completed)
+
+- [x] ADR-001: Backend Architecture (`docs/decisions/ADR-001-backend-architecture.md`).
+- [x] ADR-002: Database Architecture (`docs/decisions/ADR-002-database-architecture.md`).
+- [x] ADR-003: LLM Provider Architecture (`docs/decisions/ADR-003-llm-provider-architecture.md`).
+- [x] Conversation Architecture & Model specification (`docs/architecture/conversation-model.md`).
+- [x] Tool Risk & Action Classification Model (`docs/security/tool-risk-model.md`).
+- [x] OpenClaw Integration Principles (`docs/architecture/openclaw-integration-principles.md`).
+
+## Phase 5 — Agent Runtime (Implemented, Pending Acceptance)
+
+- [x] Design Agent Runtime and single-pass execution model.
+- [x] Define in-memory execution records (`AgentRun`, `AgentRunStatus`).
+- [x] Implement `AgentRuntime` with deterministic message translation and assembly.
+- [x] Implement runtime error hierarchy (`AgentInputError`, `AgentConfigurationError`).
+- [x] Implement offline test suite with `MockLLMProvider` (`tests/test_agent_runtime.py`).
 - [ ] Architectural review & acceptance.
-
-## Phase 5 — Agent Runtime (Locked / Planned)
-
-- [ ] Design Agent Runtime and reasoning loop.
-- [ ] Define Agent execution runs (`AgentRun`).
-- [ ] Connect LLM Provider to agent execution.
 
 ## Later Phases (Planned)
 
-- [ ] Sessions & Execution Context
-- [ ] Tool Calling & Function Execution
-- [ ] Memory System
-- [ ] WhatsApp Integration
-- [ ] Web Control Center
+- [ ] Phase 6 — Tool Calling & Function Execution
+- [ ] Phase 7 — Task & Project Domain
+- [ ] Phase 8 — Memory Systems
+- [ ] Phase 9 — Context Engine
+- [ ] Phase 12 — WhatsApp Integration
+- [ ] Phase 14 — Security & Approval Policies
